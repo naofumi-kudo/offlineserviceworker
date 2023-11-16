@@ -1,0 +1,78 @@
+<!--
+    以下のページを参照して作成
+    https://qiita.com/OMOIKANESAN/items/13a3dde525e33eb608ae
+    上記のサンプルサイト
+    https://qiita-pwa.s3.ap-northeast-1.amazonaws.com/flowerbook/index.html
+    上記のgithub
+    https://github.com/ktsh2017/pwa_offline_sample
+-->
+
+<!DOCTYPE html>
+<html lang="ja" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+ 
+  <title>Offline Webworker</title>
+ 
+  <script type="module">
+ 
+  </script>
+ 
+  <meta name="description" content="ページの説明文">
+  <meta property="og:title" content="ページのタイトル">
+  <meta property="og:description" content="ページの説明文">
+  <meta property="og:image:alt" content="画像の説明文">
+  <meta property="og:locale" content="ja_JP">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Cache-Control" content="no-cache">
+
+  <meta name="theme-color" content="#0000FF">
+  <link rel="manifest" href="manifest.json">
+  <link href="./css/main.css" rel="stylesheet" />
+  <!-- <script src="./js/main.js"></script> -->
+  <!-- <script src="./config.js"></script> -->
+  <!-- <script>
+    const CACHE_NAME = "AnyUniqueStringToIdentifyCache000003";
+  </script> -->
+  <script src="./js/windowconsole.js"></script>
+  <script src="./js/main.js"></script>
+  <script src="./js/clock.js"></script>
+  
+</head>
+ 
+<body style="padding:0; margin:0">
+  <!-- コンテンツ -->
+  <div class="viewport" style="width: 100%; height:100dvh;  border:0px; padding:0px;">
+    <div class="main-wrapper" style="width: 100%; height:100%; display:flex; flex-direction: column; border:8px; padding:0px;">
+        <div id="element_view" style="margin:10px;">
+          <div style="display:flex; flex-direction:row; justify-content: flex-end;">
+            <div id="network_status" style="border:solid 2px; border-radius: 5px; text-align: right; padding: 3px; margin:3px;"></div>
+          </div>
+          <div class="contentwrapper" style="border:solid">
+              <h1>Clock (Implemented using setInterval) from ./js/clock.js</h1>
+              <div id="clock_mount_point"></div>
+          </div>
+          <div class="contentwrapper" style="border:solid">
+            <h1>fetch from ./content/*</h1>
+            <button onclick="onfetchjsoncontent(event)">fetch</button>
+            <div id="fetch_json_content_mount_point"></div>
+          </div>
+          <div class="contentwrapper" style="border:solid">
+              <h1>JMA Forecast (External API) from ./js/forecast.js</h1>
+              <div id="jma_forecast_mount_point"></div>
+          </div>
+          
+          <div class="contentwrapper" style="border:solid">
+              <button onclick="onPrintCacheClick(event)">Print cache</button>
+              <label><input type="radio" name="cache_strategy" value="0" checked>Cache First</label>
+              <label><input type="radio" name="cache_strategy" value="1">Network First</label>
+          </div>
+        </div>
+        <div id="myconsole" style="flex-grow: 1; overflow-y: scroll;margin:10px;"></div>
+    </div>
+  </div>
+</body>
+</html>
