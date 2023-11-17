@@ -153,7 +153,6 @@ window.addEventListener('online', (ev) => {
 window.addEventListener('offline', (ev) => {
     update_network_status();
 })
-window.addEventListener('')
 
 window.navigator.serviceWorker.addEventListener('message', (ev)=>{
     try{
