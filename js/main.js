@@ -1,4 +1,4 @@
-const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000020";
+const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000025";
 // import {CACHE_NAME} from "../config.js"
 
 const update_service_worker_status_element = async () => {
