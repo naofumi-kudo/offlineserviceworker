@@ -113,10 +113,44 @@ try{
     console.log('failed to create myconsole');
 }
 
+/**
+ * @param {Blob} blob
+ * @param {String} filename
+ */
+
+downloadBlobAsFile = (blob, filename) =>{
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    document.body.appendChild(a);
+    a.download = filename;
+    a.href = url;
+    a.click();
+    a.remove();
+  
+    // For Firefox it is necessary to delay revoking the ObjectURL.
+    setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+    }, 250);
+  
+  }
+
+const oncamera = (e) => {
+    const file = e.target.files[0];
+  if(!file){
+    myconsole.print('[Window oncamera] no file selected');
+    return;
+  }
+
+    downloadBlobAsFile(file, 'sample.jpg');
+    myconsole.print('[Window oncamera] file downloaded');
+}
+
+const oncameracancel = (e) =>{
+    myconsole.print('[Window oncameracancel] file selection canceled');
+}
+
 window.addEventListener('load', (ev) => {
     try_register_serviceworker();
-
-    
     
     document.getElementsByName("cache_strategy").forEach(
         r => r.addEventListener("change" ,

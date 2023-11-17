@@ -81,6 +81,16 @@
               <div id="leafletmap_mount_point"></div>
           </div>
           <div class="contentwrapper" style="border:solid">
+            <input 
+                  type="file" 
+                  accept="image/*" 
+                  capture="environment"  
+                  value=""
+                  onchanege="oncamera(event)"
+                  oncancel="oncameracancel(event)"
+                  title="camera"/>
+          </div>
+          <div class="contentwrapper" style="border:solid">
               <button onclick="onPrintCacheClick(event)">Print cache</button>
               
           </div>
