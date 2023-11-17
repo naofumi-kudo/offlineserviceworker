@@ -1,19 +1,66 @@
 const CACHE_NAME = "AnyUniqueStringToIdentifyCache000004";
 // import {CACHE_NAME} from "../config.js"
 
-if ('serviceWorker' in navigator) {
-    // serviceworker.js はオリジンからの相対URL
-    navigator.serviceWorker.register('serviceWorker.js')
-        .then((registration) => {
+const update_service_worker_status_element = async () => {
+    const wrapper = document.getElementById('serviceworker_status');
+    while(wrapper.firstChild){
+        wrapper.removeChild(wrapper.firstChild);
+    }
+
+    const registration = await navigator.serviceWorker.getRegistration();
+
+    const worker_active = registration.active;
+    const div_active = document.createElement('div');
+    if(worker_active){
+        div_active.innerText = '<active> ' + worker_active.scriptURL;
+    }else{
+        div_active.innerText = '<active> none';
+    }
+    wrapper.appendChild(div_active)
+
+    const worker_waiting = registration.waiting;
+    const div_waiting = document.createElement('div');
+    if(worker_waiting){
+        div_waiting.innerText = '<waiting> ' + worker_waiting.scriptURL;
+    }else{
+        div_waiting.innerText = '<waiting> none';
+    }
+    wrapper.appendChild(div_waiting)
+ 
+}
+
+const try_register_serviceworker = () =>{
+    if ('serviceWorker' in navigator) {
+        // serviceworker.js はオリジンからの相対URL
+        // updateViaCache:noneで、アップデートを毎回サーバーに問い合わせる
+        // https://nhiroki.jp/2018/02/15/service-worker-install-and-update-scripts
+        navigator.serviceWorker.register('serviceWorker.js',{ updateViaCache: 'none' })
+            .then((registration) => {
                 if (typeof registration.update == 'function') {
                     registration.update();
+                    const button_update = document.getElementById('update_serviceworker_button');
+                    if(button_update){
+                        button_update.onclick = (ev) => {
+                            console.log('serviceworker update');
+                            registration.update()
+                                .then(()=>{
+                                    update_service_worker_status_element();
+                                })
+                        }
+                    }
                     console.log('serviceworker update');
                 }
             })
-        .catch(function (error) {
-            console.log("Error Log: " + error);
-        });
+            .then(()=>{
+                return update_service_worker_status_element();
+            })
+            .catch(function (error) {
+                console.log("Error Log: " + error);
+            });
+        // update_service_worker_status_element();
+    }
 }
+
 
 // function onSwitchCacheStorategy(){
 //     const swcontroller = this.navigator.serviceWorker.controller;
@@ -34,6 +81,10 @@ function changeCacheStrategyTo(value){
         task: 'change_cache_strategy_to',
         value: value
     });
+}
+
+function update_serviceworker(ev){
+
 }
 
 async function onfetchjsoncontent(event){
@@ -63,6 +114,8 @@ try{
 }
 
 window.addEventListener('load', (ev) => {
+    try_register_serviceworker();
+
     update_network_status();
     
     document.getElementsByName("cache_strategy").forEach(

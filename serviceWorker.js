@@ -1,22 +1,25 @@
 // import {CACHE_NAME} from "./config.js" 
-const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000015";
-
+const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000016";
 
 // urlsToCacheFirstとurlsToNetworkFirstに入っているものは
 // serviceworkerのinstall時（初回ページ開いたとき）にキャッシュする
 // それ以外はcurrent_cache_strategyの値による
 const urlsToCacheFirst = [
-    "./jsoncontent1.json"
+    // "./jsoncontents/jsoncontent1.json"
 ]
 
 const urlsToNetworkFirst = [
     // Main HTML file
-    "index.html",
+    "./index.html",
+
+    // css file
+    "./css/main.css",
 
     // Service worker (this file)
-    "serviceWorker.js",
+    "./serviceWorker.js",
 
     // js file
+    "./js/main.js",
     "./js/clock.js",
     "./js/api.js",
     "./js/windowconsole.js",
@@ -86,19 +89,23 @@ const addAllToCache = async (urls) => {
 
     let promises = [];
     for(url of urls){
-        sendMessageToAllClients('try fetch url via network', 'serviceworker');
-        
-        const responseFromNetwork = await fetch(url);
-        if(responseFromNetwork.ok){
-            sendMessageToAllClients('fetch from nw in install success, and cached ' + url, 'serviceworker');
+        // sendMessageToAllClients('try fetch url via network', 'serviceworker');
+        let responseFromNetwork = null;
+        try{
+            responseFromNetwork = await fetch(url);
+        }catch(e){
+
+        }
+        if(responseFromNetwork && responseFromNetwork.ok){
             try{
                 promise = await cache.put(url, responseFromNetwork);
             }catch(e){
-                console.error(`failed to cache: ${e}`);
+                console.error(`failed to cache: ${e}`, '[SW install]');
             }
+            sendMessageToAllClients('fetched from network and chached: ' + url, '[SW install]');
             promises.push(promise);
         }else{
-            sendMessageToAllClients('[ERROR]fetch from nw in install failed ' + url, 'serviceworker');
+            sendMessageToAllClients('nw response error: ' + responseFromNetwork.status + ' ' + url, '[SW install]');
         }
     }
 
@@ -113,40 +120,26 @@ self.addEventListener("install", async (ev)=>{
     // https://developer.mozilla.org/ja/docs/Web/API/ExtendableEvent
 
     // このイベントリスナはサービスワーカーのインストール時（ページ表示時）に実行されます
-    console.log("service worker install");
+    console.log("service worker install", '[SW install]');
 
     await ev.waitUntil(
-        
         addAllToCache(urlsToCacheFirst.concat(urlsToNetworkFirst))
-
-        //   .catch((e)=>{
-        //       console.warn("cache open failed");
-        //   })
     );
+    self.skipWaiting();
 
-    console.log("service worker install finished");
+    // const clients = await self.clients.matchAll({includeUncontrolled: true});
+    // clients.claim();
+    
+    console.log("service worker install finished", '[SW install]');
 })
 
 
 
 //新しいバージョンのServiceWorkerが有効化されたとき
 self.addEventListener('activate', event => {
-    console.log('eventwroker activate event');
-    event.waitUntil(
+    // console.log('servicewroker activate event', '[SW activate]');
+    event.waitUntil(()=>{
         caches.keys().then(keys => {
-            // return Promise.all(
-            //     keys.filter(key => {
-            //         return !CACHE_KEYS.includes(key);
-            //     }).map(key => {
-            //         // 不要なキャッシュを削除
-            //         console.log(`delete key: ${key}`);
-            //         return caches.delete(key);
-            //     })
-            // );
-
-            // すべての()=>{caches.delete(key)}が処理を終えるのを待つために
-            // 消す必要があるkeyを消すpromiseに入れて(A)、
-            // Promise.allSettled(promises)ですべてのpromiseが完了するのを待つ(B)
             let promises = [];
             keys.forEach(key=>{
                 if(!CACHE_KEYS.includes(key)){
@@ -156,7 +149,11 @@ self.addEventListener('activate', event => {
             });
             return Promise.allSettled(promises);// (B)
         })
-    );
+        .then(()=>{
+            self.clients.claim();
+            console.log('servicewroker activate event finished', '[SW activate]');
+        })
+    });
 });
 
 self.addEventListener('message', (event) => {
@@ -184,12 +181,11 @@ const cacheFirst = async (request)=>{
     const responseFromCache = await cache.match(request);
 
     if(responseFromCache){
-        sendMessageToAllClients(`cache found from ${CACHE_NAME}, url=${request.url}`, 'serviceworker cacheFirst');
-        sendMessageToAllClients("fetch response is from cache: " + request.url, 'serviceworker cacheFirst');
+        sendMessageToAllClients(`cache found. url=${request.url}`, '[SW cacheFirst]');
         return responseFromCache;
     }
 
-    sendMessageToAllClients('cache NOT found: ' + request.url, 'serviceworker cacheFirst');
+    // sendMessageToAllClients('cache NOT found: ' + request.url, 'serviceworker cacheFirst');
 
     let responseFromNetwork;
     try{
@@ -197,35 +193,28 @@ const cacheFirst = async (request)=>{
         // responseはstreamなので、キャッシュ用にはclone()したものを渡さなければならない。
         // さもないと、cache.put()後のresponseは使用できなくなる
         cache.put(request, responseFromNetwork.clone());
-        sendMessageToAllClients('fetch response putted in cache: ' + request.url, 'serviceworker cacheFirst');
-        sendMessageToAllClients('fetch response is from network: ' + request.url, 'serviceworker cacheFirst');
+        sendMessageToAllClients('cache not found and network success: ' + request.url, '[SW cacheFirst]');
         return responseFromNetwork;
     }catch(e){
-        sendMessageToAllClients('failed to fetch: ' + request.url, 'serviceworker networkFirst');
+        sendMessageToAllClients('failed to fetch, cache nor network unavailable ' + request.url, '[SW cacheFirst]');
         throw(e);
     }
-    
-    
-    
-
-    
 }
 
 const networkFirst = async (request)=>{
 
     const cache = await caches.open(CACHE_NAME);
 
-
     let responseFromNetwork;
     try{
         responseFromNetwork = await fetch(request);
     }catch(e){
-        sendMessageToAllClients('failed to fetch: ' + request.url, 'serviceworker networkFirst')
+        // sendMessageToAllClients('failed to fetch: ' + request.url, 'serviceworker networkFirst')
     }
 
     // ネットワークから取得成功
     if(responseFromNetwork && responseFromNetwork.ok){
-        sendMessageToAllClients('network response success: ' + request.url, 'serviceworker networkFirst');
+        sendMessageToAllClients('network response success: ' + request.url, '[SW networkFirst]');
         // responseはstreamなので、cache用にclone()して渡す
         await cache.put(request.url, responseFromNetwork.clone());
         return responseFromNetwork;
@@ -234,35 +223,49 @@ const networkFirst = async (request)=>{
     // ネットワークから取得失敗した場合、cacheから探す
     const responseFromCache = await cache.match(request);
     if(responseFromCache){
-        sendMessageToAllClients('request found in cache: ' + request.url, 'serviceworker networkFirst');
+        sendMessageToAllClients('request found in cache: ' + request.url, '[SW networkFirst]');
         return responseFromCache
     }
 
     // cacheからも見つからなければ、networkからの失敗responseを返す
-    sendMessageToAllClients('networkFirst CANNOT fetch response: ' + request.url, 'serviceworker networkFirst');
+    sendMessageToAllClients('networkFirst CANNOT fetch response: ' + request.url, '[SW networkFirst]');
     return responseFromNetwork
+}
+
+const hasSameUrl = (arrUrl, full_url) => {
+    for(let i=0; i<arrUrl.length-1; i++){
+        let theUrlString = arrUrl[i];
+        let theUrl = null;
+        if(theUrlString.match(/https?:\/\//)){
+            theUrl = new URL(theUrlString);
+        }else{
+            theUrl = new URL(theUrlString, self.origin);
+        }
+
+        if(theUrl && theUrl.href === full_url){
+            return true;
+        }
+    }
+    return false;
 }
 
 self.addEventListener('fetch', async (event) => {
 
-    console.log(`serviceworker fetch event ${event.request.url}`);
-    sendMessageToAllClients(`fetch event: ${event.request.method} ${event.request.url}`, source="serviceworker fetch");
-    var logmessage = '';
-    logmessage += `serviceworker fetch listener\n`
-    logmessage += `navigator.onLine: ${self.navigator.onLine}\n`
-    logmessage += `event.request.method: ${event.request.method}\n`
-    logmessage += `event.request.url: ${event.request.url}\n`
+    console.log(`serviceworker fetch event ${event.request.url}`, '[SW fetch]');
+    sendMessageToAllClients(`fetch event: ${event.request.method} ${event.request.url}`, source="[SW fetch]");
 
     let url = new URL(event.request.url);
 
-    if(urlsToCacheFirst.includes(event.request.url)){
-        sendMessageToAllClients('fetch event respond cacheFirst');
+    // if(urlsToCacheFirst.includes(event.request.url)){
+    if(hasSameUrl(urlsToCacheFirst, event.request.url)){
+        // sendMessageToAllClients('fetch event respond cacheFirst');
         event.respondWith(cacheFirst(event.request));
         return;
     }
 
-    if(urlsToNetworkFirst.includes(event.request.url)){
-        sendMessageToAllClients('fetch event respond cacheFirst');
+    // if(urlsToNetworkFirst.includes(event.request.url)){
+    if(hasSameUrl(urlsToNetworkFirst, event.request.url)){
+        // sendMessageToAllClients('fetch event respond cacheFirst');
         event.respondWith(networkFirst(event.request));
         return;
     }
