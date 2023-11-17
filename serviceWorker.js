@@ -70,7 +70,7 @@ const addAllToCache = async (urls) => {
             try{
                 if(url.startsWith('http')){
                     const text = await responseFromNetwork.clone().text();
-                    console.log(`[SW install] http text ${text}`);
+                    // console.log(`[SW install] http text ${text}`);
                 }
                 promise = await cache.put(url, responseFromNetwork);
             }catch(e){

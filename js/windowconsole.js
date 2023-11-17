@@ -32,6 +32,9 @@ class MyConsole{
         }catch(e){
             console.log(e);
         }
+
+        this.mount_point.scrollTo(0, this.mount_point.scrollHeight);
+
         console.log(textable);
     }
     log(textable){
