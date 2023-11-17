@@ -1,5 +1,5 @@
 // import {CACHE_NAME} from "./config.js" 
-const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000020";
+const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000021";
 
 // urlsToCacheFirstとurlsToNetworkFirstに入っているものは
 // serviceworkerのinstall時（初回ページ開いたとき）にキャッシュする
@@ -23,6 +23,9 @@ const urlsToNetworkFirst = [
     "./js/clock.js",
     "./js/api.js",
     "./js/windowconsole.js",
+
+    "./contents/jsoncontent1.json",
+    "./contents/jsoncontent2.json",
     
     // External cdn package
     "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
