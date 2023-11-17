@@ -116,7 +116,7 @@ try{
 window.addEventListener('load', (ev) => {
     try_register_serviceworker();
 
-    update_network_status();
+    
     
     document.getElementsByName("cache_strategy").forEach(
         r => r.addEventListener("change" ,
@@ -125,11 +125,14 @@ window.addEventListener('load', (ev) => {
     );
 
     myconsole = new MyConsole(document.getElementById('myconsole'));
+
+    update_network_status();
     myconsole.print("window.onload finished");
 })
 
 window.addEventListener('DOMContentLoaded', (ev)=>{
     make_leaflet_map('leafletmap_mount_point');
+    update_network_status();
 })
 
 
