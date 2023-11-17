@@ -1,4 +1,4 @@
-const CACHE_NAME = "AnyUniqueStringToIdentifyCache000004";
+const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000010";
 // import {CACHE_NAME} from "../config.js"
 
 const update_service_worker_status_element = async () => {
@@ -124,9 +124,12 @@ window.addEventListener('load', (ev) => {
         )
     );
 
-
     myconsole = new MyConsole(document.getElementById('myconsole'));
     myconsole.print("window.onload finished");
+})
+
+window.addEventListener('DOMContentLoaded', (ev)=>{
+    make_leaflet_map('leafletmap_mount_point');
 })
 
 

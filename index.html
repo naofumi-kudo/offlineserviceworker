@@ -37,9 +37,14 @@
   <!-- <script>
     const CACHE_NAME = "AnyUniqueStringToIdentifyCache000003";
   </script> -->
+
+  <link  rel='stylesheet' href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <script src="./js/windowconsole.js"></script>
   <script src="./js/main.js"></script>
   <script src="./js/clock.js"></script>
+  <script src="./js/leafletsample.js"></script>
   
 </head>
  
@@ -67,8 +72,8 @@
             <div id="fetch_json_content_mount_point"></div>
           </div>
           <div class="contentwrapper" style="border:solid">
-              <h1>JMA Forecast (External API) from ./js/forecast.js</h1>
-              <div id="jma_forecast_mount_point"></div>
+              <h1>leaflet map from ./js/leafletsample.js</h1>
+              <div id="leafletmap_mount_point"></div>
           </div>
           <div class="contentwrapper" style="border:solid">
               <button onclick="onPrintCacheClick(event)">Print cache</button>

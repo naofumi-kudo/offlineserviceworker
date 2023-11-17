@@ -43,7 +43,7 @@ const CACHE_STORATEGY = Object.freeze({
 })
 
 function sendMessageToAllClients(message, source='serviceworker'){
-    console.log(`${source} : ${message}`);
+    // console.log(`${source} : ${message}`);
     self.clients.matchAll().then(clients =>
         clients.forEach(client => 
             client.postMessage({
@@ -57,7 +57,7 @@ var current_cache_storategy = CACHE_STORATEGY.CACHE_FIRST;
 const addAllToCache = async (urls) => {
     const cache = await caches.open(CACHE_NAME);
 
-    let promises = [];
+    // let promises = [];
     for(url of urls){
         // sendMessageToAllClients('try fetch url via network', 'serviceworker');
         let responseFromNetwork = null;
@@ -68,12 +68,16 @@ const addAllToCache = async (urls) => {
         }
         if(responseFromNetwork && responseFromNetwork.ok){
             try{
+                if(url.startsWith('http')){
+                    const text = await responseFromNetwork.clone().text();
+                    console.log(`[SW install] http text ${text}`);
+                }
                 promise = await cache.put(url, responseFromNetwork);
             }catch(e){
                 console.error(`failed to cache: ${e}`, '[SW install]');
             }
             sendMessageToAllClients('fetched from network and chached: ' + url, '[SW install]');
-            promises.push(promise);
+            // promises.push(promise);
         }else{
             if(responseFromNetwork){
                 sendMessageToAllClients('nw response error: ' + responseFromNetwork.status + ' ' + url, '[SW install]');
@@ -156,7 +160,7 @@ const cacheFirst = async (request)=>{
 
     if(responseFromCache){
         sendMessageToAllClients(`cache found. url=${request.url}`, '[SW cacheFirst]');
-        return responseFromCache;
+        return responseFromCache.clone();
     }
 
     // sendMessageToAllClients('cache NOT found: ' + request.url, 'serviceworker cacheFirst');
@@ -183,7 +187,7 @@ const networkFirst = async (request)=>{
     try{
         responseFromNetwork = await fetch(request);
     }catch(e){
-        // sendMessageToAllClients('failed to fetch: ' + request.url, 'serviceworker networkFirst')
+        sendMessageToAllClients('network error: ' + e + request.url, '[SW networkFirst]')
     }
 
     // ネットワークから取得成功
@@ -198,7 +202,7 @@ const networkFirst = async (request)=>{
     const responseFromCache = await cache.match(request);
     if(responseFromCache){
         sendMessageToAllClients('request found in cache: ' + request.url, '[SW networkFirst]');
-        return responseFromCache
+        return responseFromCache.clone();
     }
 
     // cacheからも見つからなければ、networkからの失敗responseを返す
@@ -228,7 +232,7 @@ const hasSameUrl = (arrUrl, full_url) => {
 self.addEventListener('fetch', async (event) => {
 
     // console.log(`serviceworker fetch event ${event.request.url}`, '[SW fetch]');
-    sendMessageToAllClients(`fetch event: ${event.request.method} ${event.request.url}`, source="[SW fetch]");
+    // sendMessageToAllClients(`fetch event: ${event.request.method} ${event.request.url}`, source="[SW fetch]");
 
     let url = new URL(event.request.url);
 
