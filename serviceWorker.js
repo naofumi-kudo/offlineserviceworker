@@ -105,7 +105,11 @@ const addAllToCache = async (urls) => {
             sendMessageToAllClients('fetched from network and chached: ' + url, '[SW install]');
             promises.push(promise);
         }else{
-            sendMessageToAllClients('nw response error: ' + responseFromNetwork.status + ' ' + url, '[SW install]');
+            if(responseFromNetwork){
+                sendMessageToAllClients('nw response error: ' + responseFromNetwork.status + ' ' + url, '[SW install]');
+            }else{
+                sendMessageToAllClients('nw response is null ' + url, '[SW install]');
+            }
         }
     }
 
