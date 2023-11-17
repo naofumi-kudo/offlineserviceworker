@@ -1,5 +1,5 @@
 // import {CACHE_NAME} from "./config.js" 
-const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000021";
+const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000030";
 
 // urlsToCacheFirstとurlsToNetworkFirstに入っているものは
 // serviceworkerのinstall時（初回ページ開いたとき）にキャッシュする
