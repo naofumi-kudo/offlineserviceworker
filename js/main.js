@@ -161,6 +161,7 @@ window.addEventListener('load', (ev) => {
 
     update_network_status();
     myconsole.print("window.onload finished");
+    myconsole.print("## onloadが完了する前にserviceworkerから送信されたmessageは表示されていません ##")
 })
 
 window.addEventListener('DOMContentLoaded', (ev)=>{
