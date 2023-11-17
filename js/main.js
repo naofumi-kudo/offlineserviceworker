@@ -138,11 +138,12 @@ window.addEventListener('DOMContentLoaded', (ev)=>{
 
 function update_network_status(){
     const element = document.getElementById('network_status');
+    const ntype = navigator.connection.effectiveType?`(${navigator.connection.effectiveType})`:''
     if(window.navigator.onLine){
-        element.innerHTML = "Est. ONLINE (" + navigator.connection.effectiveType?navigator.connection.effectiveType:'?' + ')';
+        element.innerHTML = "Est. ONLINE " + ntype;
         element.style.color = "green";
     }else{
-        element.innerHTML = "Est. OFFLINE (" + navigator.connection.effectiveType?navigator.connection.effectiveType:'?' + ')';
+        element.innerHTML = "Est. OFFLINE " + ntype;
         element.style.color = "red";
     }
 }
