@@ -1,5 +1,5 @@
 // import {CACHE_NAME} from "./config.js" 
-const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000031";
+const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000038";
 
 // urlsToCacheFirstとurlsToNetworkFirstに入っているものは
 // serviceworkerのinstall時（初回ページ開いたとき）にキャッシュする
@@ -118,24 +118,21 @@ self.addEventListener("install", async (ev)=>{
 
 //新しいバージョンのServiceWorkerが有効化されたとき
 self.addEventListener('activate', event => {
-    // console.log('servicewroker activate event', '[SW activate]');
-    event.waitUntil(()=>{
-        caches.keys().then(keys => {
-            let promises = [];
-            keys.forEach(key=>{
-                if(!CACHE_KEYS.includes(key)){
-                    console.log(`delete key: ${key}`);
-                    promises.push(caches.delete(key));// (A)
-                }
-            });
-            return Promise.allSettled(promises);// (B)
-        })
-        .then(()=>{
-            self.clients.claim();
-            console.log('servicewroker activate event finished', '[SW activate]');
-        })
-    });
-});
+    sendMessageToAllClients('activate event', '[SW activate]');
+    event.waitUntil(
+      caches.keys().then(keys => {
+        return Promise.all(
+          keys.filter(key => {
+            return !CACHE_KEYS.includes(key);
+          }).map(key => {
+            // 不要なキャッシュを削除
+            sendMessageToAllClients(`delete cache: ${key}`, '[SW activate]');
+            return caches.delete(key);
+          })
+        );
+      })
+    );
+  });
 
 self.addEventListener('message', (event) => {
     if(event.data.task && event.data.task === 'change_cache_strategy_to'){
@@ -183,6 +180,16 @@ const cacheFirst = async (request)=>{
         cache.put(request, responseFromNetwork.clone());
         sendMessageToAllClients('cache not found and network success: ' + request.url, '[SW cacheFirst]');
         return responseFromNetwork;
+    }else{
+        // netword error ??????????????????
+        // https://ja.stackoverflow.com/questions/36352/%E3%82%AF%E3%83%AD%E3%82%B9%E3%83%89%E3%83%A1%E3%82%A4%E3%83%B3%E9%80%9A%E4%BF%A1%E3%81%A7http-status-code-%E3%81%8C0;
+        if(responseFromNetwork.status === 0){
+            console.warn(`[SW cacheFirst] !!!!! Netword Error ??????????? status: ${responseFromNetwork.status} ${responseFromNetwork.statusText}`)
+            sendMessageToAllClients(`!!!!! Netword Error ??????????? status: ${responseFromNetwork.status} ${responseFromNetwork.statusText}`, `[SW cacheFirst]`);
+            return responseFromNetwork;
+        }
+        
+        return responseFromNetwork;
     }
     
 }
@@ -215,9 +222,9 @@ const networkFirst = async (request)=>{
         return responseFromCache.clone();
     }
 
-    // cacheからも見つからなければ、networkからの例外を返す
+    // cacheからも見つからなければ、networkからのresponseを返す
     sendMessageToAllClients('networkFirst CANNOT fetch response: ' + request.url, '[SW networkFirst]');
-    return networkError;
+    return responseFromNetwork;
 }
 
 const hasSameUrl = (arrUrl, full_url) => {
