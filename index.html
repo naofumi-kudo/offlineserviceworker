@@ -60,6 +60,12 @@
             <button id="update_serviceworker_button">update serviceworker</button>
             <div id="serviceworker_status"></div>
           </div>
+          <hr>
+          <div class="contentwrapper">
+            <div>urlsToCacheFirstとurlsToNetworkFirst以外のファイルのキャッシュ</div>
+            <label><input type="radio" name="cache_strategy" value="0" checked>Cache First</label>
+            <label><input type="radio" name="cache_strategy" value="1">Network First</label>
+          </div>
           <div class="contentwrapper" style="border:solid">
               <h1>Clock (Implemented using setInterval) from ./js/clock.js</h1>
               <div id="clock_mount_point"></div>
@@ -67,8 +73,7 @@
           <div class="contentwrapper" style="border:solid">
             <h1>fetch from ./content/*</h1>
             <button onclick="onfetchjsoncontent(event)">fetch</button>
-            <label><input type="radio" name="cache_strategy" value="0" checked>Cache First</label>
-            <label><input type="radio" name="cache_strategy" value="1">Network First</label>
+            
             <div id="fetch_json_content_mount_point"></div>
           </div>
           <div class="contentwrapper" style="border:solid">
