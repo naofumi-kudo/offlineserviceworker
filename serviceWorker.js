@@ -171,15 +171,20 @@ const cacheFirst = async (request)=>{
     let responseFromNetwork;
     try{
         responseFromNetwork = await fetch(request);
+    }catch(e){
+        // オフラインの時はfetchが例外を発生させるのでそれをそのまま再送する
+        sendMessageToAllClients('failed to fetch, cache nor network unavailable ' + request.url, '[SW cacheFirst]');
+        throw(e);
+    }
+
+    if(responseFromNetwork && responseFromNetwork.ok){
         // responseはstreamなので、キャッシュ用にはclone()したものを渡さなければならない。
         // さもないと、cache.put()後のresponseは使用できなくなる
         cache.put(request, responseFromNetwork.clone());
         sendMessageToAllClients('cache not found and network success: ' + request.url, '[SW cacheFirst]');
         return responseFromNetwork;
-    }catch(e){
-        sendMessageToAllClients('failed to fetch, cache nor network unavailable ' + request.url, '[SW cacheFirst]');
-        throw(e);
     }
+    
 }
 
 const networkFirst = async (request)=>{
@@ -187,10 +192,12 @@ const networkFirst = async (request)=>{
     const cache = await caches.open(CACHE_NAME);
 
     let responseFromNetwork;
+    let networkError;
     try{
         responseFromNetwork = await fetch(request);
     }catch(e){
-        sendMessageToAllClients('network error: ' + e + request.url, '[SW networkFirst]')
+        sendMessageToAllClients('network error: ' + e + request.url, '[SW networkFirst]');
+        networkError = e;
     }
 
     // ネットワークから取得成功
@@ -208,9 +215,9 @@ const networkFirst = async (request)=>{
         return responseFromCache.clone();
     }
 
-    // cacheからも見つからなければ、networkからの失敗responseを返す
+    // cacheからも見つからなければ、networkからの例外を返す
     sendMessageToAllClients('networkFirst CANNOT fetch response: ' + request.url, '[SW networkFirst]');
-    return responseFromNetwork
+    return networkError;
 }
 
 const hasSameUrl = (arrUrl, full_url) => {
