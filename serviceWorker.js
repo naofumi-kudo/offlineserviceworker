@@ -30,27 +30,6 @@ const urlsToNetworkFirst = [
     // "https://unpkg.com/leaflet@1.9.4/dist/*"
 ]
 
-// const urlsToSwitchable = [
-//     "./jsoncontent2.json"
-// ]
-
-// const urlsToCache = [
-//     // Main HTML file
-//     "index.html",
-
-//     // Service worker (this file)
-//     "serviceWorker.js",
-
-//     // js file
-//     "./js/clock.js",
-//     "./js/api.js",
-//     "./js/windowconsole.js",
-    
-//     // External cdn package
-//     "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
-//     "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-// ];
-
 // 残したいキャッシュのバージョン(キャッシュ識別子)をこの配列に入れる
 // 基本的に現行の1つだけでよい。他は削除される。
 const CACHE_KEYS = [
@@ -74,15 +53,6 @@ function sendMessageToAllClients(message, source='serviceworker'){
 }
 
 var current_cache_storategy = CACHE_STORATEGY.CACHE_FIRST;
-
-// self.addEventListener('updatefound', (ev)=>{
-//     try{
-//         sendMessageToAllClients('updatefound event', 'serviceworker');
-//     }catch(e){
-        
-//     }
-//     console.log('updatefound');
-// })
 
 const addAllToCache = async (urls) => {
     const cache = await caches.open(CACHE_NAME);
@@ -124,17 +94,17 @@ self.addEventListener("install", async (ev)=>{
     // https://developer.mozilla.org/ja/docs/Web/API/ExtendableEvent
 
     // このイベントリスナはサービスワーカーのインストール時（ページ表示時）に実行されます
-    console.log("service worker install", '[SW install]');
+    console.log("[SW install] service worker install");
 
     await ev.waitUntil(
         addAllToCache(urlsToCacheFirst.concat(urlsToNetworkFirst))
     );
-    self.skipWaiting();
+    await ev.waitUntil(self.skipWaiting());
 
     // const clients = await self.clients.matchAll({includeUncontrolled: true});
     // clients.claim();
     
-    console.log("service worker install finished", '[SW install]');
+    console.log("[SW install] service worker install finished");
 })
 
 
@@ -243,7 +213,9 @@ const hasSameUrl = (arrUrl, full_url) => {
         if(theUrlString.match(/https?:\/\//)){
             theUrl = new URL(theUrlString);
         }else{
-            theUrl = new URL(theUrlString, self.origin);
+            // self.registration.scopeは、scopeのフォルダが返ってくる
+            // ex, 'https://naofumi-kudo.github.io/offlineserviceworker/'
+            theUrl = new URL(theUrlString, self.registration.scope);
         }
 
         if(theUrl && theUrl.href === full_url){
@@ -255,7 +227,7 @@ const hasSameUrl = (arrUrl, full_url) => {
 
 self.addEventListener('fetch', async (event) => {
 
-    console.log(`serviceworker fetch event ${event.request.url}`, '[SW fetch]');
+    // console.log(`serviceworker fetch event ${event.request.url}`, '[SW fetch]');
     sendMessageToAllClients(`fetch event: ${event.request.method} ${event.request.url}`, source="[SW fetch]");
 
     let url = new URL(event.request.url);
