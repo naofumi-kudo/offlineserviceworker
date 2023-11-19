@@ -181,7 +181,23 @@ const cacheFirst = async (request)=>{
         sendMessageToAllClients('cache not found and network success: ' + request.url, '[SW cacheFirst]');
         return responseFromNetwork;
     }else{
-        // netword error ??????????????????
+        //
+        // jsでのリクエストがCross-originでない場合、response.statusが0となり、リクエスト成功/失敗かどうかも
+        // 判断できない。
+        // https://stackoverflow.com/questions/40182785/why-fetch-return-a-response-with-status-0
+        // 
+        // leafletではTileLayerの作成時にオプションにcrossOrigin:trueをつける、(https://leafletjs.com/reference.html#tilelayer)
+        // 
+        // fetch()ではjs側でfetch()実行時にCORSにする必要がある。(サーバーが対応している必要もある)
+        //  fetch('https://example.test', {
+        //      mode: 'cors,
+        //  })
+        //
+        // CORS modeについて
+        // https://qiita.com/ryokkkke/items/79f1d338e141d4b7201b
+        // 
+        // ↓これは関係なかった
+        // 　netword error ??????????????????
         // https://ja.stackoverflow.com/questions/36352/%E3%82%AF%E3%83%AD%E3%82%B9%E3%83%89%E3%83%A1%E3%82%A4%E3%83%B3%E9%80%9A%E4%BF%A1%E3%81%A7http-status-code-%E3%81%8C0;
         if(responseFromNetwork.status === 0){
             console.warn(`[SW cacheFirst] !!!!! Netword Error ??????????? status: ${responseFromNetwork.status} ${responseFromNetwork.statusText}`)
@@ -223,6 +239,7 @@ const networkFirst = async (request)=>{
     }
 
     // cacheからも見つからなければ、networkからのresponseを返す
+    // jsからのリクエストがNO-CORSだった場合はこれになる。serviceworkerにはresponseの内容は見えない
     sendMessageToAllClients('networkFirst CANNOT fetch response: ' + request.url, '[SW networkFirst]');
     return responseFromNetwork;
 }
