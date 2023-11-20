@@ -1,5 +1,5 @@
 // import {CACHE_NAME} from "./config.js" 
-const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000038";
+const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000039";
 
 // urlsToCacheFirstとurlsToNetworkFirstに入っているものは
 // serviceworkerのinstall時（初回ページ開いたとき）にキャッシュする
@@ -55,7 +55,7 @@ function sendMessageToAllClients(message, source='serviceworker'){
             })));
 }
 
-var current_cache_storategy = CACHE_STORATEGY.CACHE_FIRST;
+var current_cache_storategy = CACHE_STORATEGY.NETWORK_FIRST;
 
 const addAllToCache = async (urls) => {
     const cache = await caches.open(CACHE_NAME);
@@ -67,8 +67,28 @@ const addAllToCache = async (urls) => {
         try{
             responseFromNetwork = await fetch(url);
         }catch(e){
-
+            // nop
         }
+        // response.type === "error": 
+        //     ネットワークエラーです。 エラーを記述した有益な情報は使用できません。 
+        //     レスポンスのステータスは 0 で、ヘッダーは空で不変です。 これは Response.error()
+        //     から得られる種類のレスポンスです。
+        //
+        // response.type === "opaque":
+        //     opaque: オリジン間リソースへの "no-cors "リクエストに対するレスポンス。 厳しく制限されています
+        // 
+        // #############
+        //
+        // installイベントからのfetchはcorsになるのでstatus:200となり、問題なくキャッシュできる
+        //
+        // #############
+
+        if(responseFromNetwork && responseFromNetwork.type === "opaque"){
+            console.log(`[SW install] no-cors response. cannot put to cache. ${request.url}`);
+            continue
+        }
+
+        console.log(`[SW install] request to ${url}, response ${responseFromNetwork.status}`);
         if(responseFromNetwork && responseFromNetwork.ok){
             try{
                 if(url.startsWith('http')){
@@ -103,6 +123,7 @@ self.addEventListener("install", async (ev)=>{
     // このイベントリスナはサービスワーカーのインストール時（ページ表示時）に実行されます
     console.log("[SW install] service worker install");
 
+    // waitUntilは複数回呼び出すことができる
     await ev.waitUntil(
         addAllToCache(urlsToCacheFirst.concat(urlsToNetworkFirst))
     );
@@ -218,9 +239,9 @@ const networkFirst = async (request)=>{
     let networkError;
     try{
         responseFromNetwork = await fetch(request);
-    }catch(e){
-        sendMessageToAllClients('network error: ' + e + request.url, '[SW networkFirst]');
-        networkError = e;
+    }catch(error){
+        sendMessageToAllClients(`response error: ${error.message} ${request.url}`, `[SW networkFirst]`);
+        networkError = error;
     }
 
     // ネットワークから取得成功
