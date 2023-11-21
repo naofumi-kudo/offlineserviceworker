@@ -38,8 +38,16 @@
     const CACHE_NAME = "AnyUniqueStringToIdentifyCache000003";
   </script> -->
 
-  <link  rel='stylesheet' href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- ##################
+    crossorigin="anonymous"をつけることでserviceworkerがstatusと中身を見ることができ、
+    キャッシュできるようになる。
+  ################### -->
+  <link rel='stylesheet' 
+    crossorigin="anonymous"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script 
+    crossorigin="anonymous"
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script src="./js/windowconsole.js"></script>
   <script src="./js/main.js"></script>
@@ -63,8 +71,8 @@
           <hr>
           <div class="contentwrapper">
             <div>urlsToCacheFirst[]とurlsToNetworkFirst[]以外のファイルのキャッシュ戦略</div>
-            <label><input type="radio" name="cache_strategy" value="0" checked>Cache First</label>
-            <label><input type="radio" name="cache_strategy" value="1">Network First</label>
+            <label><input type="radio" name="cache_strategy" value="0">Cache First</label>
+            <label><input type="radio" name="cache_strategy" value="1" checked>Network First</label>
           </div>
           <div class="contentwrapper" style="border:solid">
               <h1>Clock (Implemented using setInterval) from ./js/clock.js</h1>
