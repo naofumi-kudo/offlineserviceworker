@@ -148,7 +148,21 @@ const oncameracancel = (e) =>{
     myconsole.print('[Window oncameracancel] file selection canceled');
 }
 
-window.addEventListener('load', (ev) => {
+function report_cache_key_order(){
+    const swcontroller = this.navigator.serviceWorker.controller;
+    if(!swcontroller){
+        myconsole.print("ServiceWorker controller NOT found");
+    }
+    swcontroller.postMessage({
+        task: 'report_cache_key_order'
+    });
+}
+
+function onPrintCacheClick(ev){
+    report_cache_key_order();
+}
+
+window.addEventListener('load', async (ev) => {
     try_register_serviceworker();
     
     document.getElementsByName("cache_strategy").forEach(
@@ -162,6 +176,20 @@ window.addEventListener('load', (ev) => {
     update_network_status();
     myconsole.print("window.onload finished");
     myconsole.print("## onloadが完了する前にserviceworkerから送信されたmessageは表示されていません ##")
+
+    // cache.keys()がどの順で取得できるかのテスト用
+    
+    setTimeout(async () =>{
+        response = await fetch("https://cyberjapandata.gsi.go.jp/xyz/std/12/3636/1617.png", {mode: "cors"});
+        response = await fetch("https://cyberjapandata.gsi.go.jp/xyz/std/12/3639/1618.png", {mode: "cors"});
+        response = await fetch("https://cyberjapandata.gsi.go.jp/xyz/std/12/3640/1619.png", {mode: "cors"});
+        response = await fetch("https://cyberjapandata.gsi.go.jp/xyz/std/12/3640/1620.png", {mode: "cors"});
+    }, 2000);
+
+    setTimeout(async () =>{
+        response = await fetch("https://cyberjapandata.gsi.go.jp/xyz/std/12/3636/1617.png", {mode: "cors"});
+    }, 4000);
+
 })
 
 window.addEventListener('DOMContentLoaded', (ev)=>{

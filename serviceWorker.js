@@ -1,5 +1,6 @@
 // import {CACHE_NAME} from "./config.js" 
 const CACHE_NAME = "AnyUniqueStringToIdentifyCache0000038";
+const MAP_CACHE_NAME = "MapCache00001";
 
 // urlsToCacheFirstとurlsToNetworkFirstに入っているものは
 // serviceworkerのinstall時（初回ページ開いたとき）にキャッシュする
@@ -134,7 +135,7 @@ self.addEventListener('activate', event => {
     );
   });
 
-self.addEventListener('message', (event) => {
+self.addEventListener('message', async (event) => {
     if(event.data.task && event.data.task === 'change_cache_strategy_to'){
         current_cache_storategy = event.data.value;
         let strstrategy = '';
@@ -149,6 +150,16 @@ self.addEventListener('message', (event) => {
                 strstrategy = 'UNKNOWN';
         }
         sendMessageToAllClients(`current cache storategy: ${strstrategy}`, 'serviceworker message listener');
+    }else if(event.data.task && event.data.task === 'report_cache_key_order'){
+        // caches.cache[].keys()がどの順でkeyを返すか知りたい
+        const cache = await caches.open(CACHE_NAME);
+        const keys = await cache.keys();
+        let request_urls = [];
+        for(let req of keys){
+            request_urls.push(req.url);
+        }
+        const breakhere = 1;
+
     }
 })
 
@@ -294,13 +305,13 @@ self.addEventListener('fetch', async (event) => {
 })
 
 
-function Util_(dom_element){
+// function Util_(dom_element){
 
-    caches.open(CACHE_NAME).then((cache) => {
-        cache.keys().then((keys) => {
-                keys.forEach((request, index, array) => {
-                    // cache.delete(request);
-                });
-            });
-        });
-}
+//     caches.open(CACHE_NAME).then((cache) => {
+//         cache.keys().then((keys) => {
+//                 keys.forEach((request, index, array) => {
+//                     // cache.delete(request);
+//                 });
+//             });
+//         });
+// }
